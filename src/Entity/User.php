@@ -39,6 +39,11 @@ class User implements UserInterface
      */
     private $apiToken;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $token_expire;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -125,6 +130,18 @@ class User implements UserInterface
     public function setApiToken(string $apiToken): self
     {
         $this->apiToken = $apiToken;
+
+        return $this;
+    }
+
+    public function getTokenExpire(): ?\DateTimeInterface
+    {
+        return $this->token_expire;
+    }
+
+    public function setTokenExpire(?\DateTimeInterface $token_expire): self
+    {
+        $this->token_expire = $token_expire;
 
         return $this;
     }

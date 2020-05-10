@@ -8,47 +8,39 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
+use Symfony\Component\Validator\Constraints\DateTime;
 
-class PasswordAuthenticator extends AbstractGuardAuthenticator
+class ApiTokenAuthenticator extends AbstractGuardAuthenticator
 {
     /** @var UserRepository $userRepository */
     private $userRepository;
 
-    /** @var PasswordEncoderInterface $passwordEncoder */
-    private $passwordEncoder;
-
-    public function __construct(UserRepository $userRepository, UserPasswordEncoderInterface $passwordEncoder)
+    public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
-        $this->passwordEncoder = $passwordEncoder;
     }
 
     public function supports(Request $request)
     {
-        return $request->headers->get('username');
+        return $request->headers->has('X-AUTH-TOKEN');
     }
 
     public function getCredentials(Request $request)
     {
-        return [
-            'username' => $request->headers->get('username'),
-            'password' => $request->headers->get('password')
-        ];
+        return $request->headers->get('X-AUTH-TOKEN');
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider): User
     {
-        if (!$credentials['password']) {
-            throw new AuthenticationException('Empty password');
+        if (!$credentials) {
+            return null;
         }
 
-        return $this->userRepository->getUserByEmail($credentials['username']);
+        return $this->userRepository->getUserByApiToken($credentials);
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey)
@@ -56,10 +48,17 @@ class PasswordAuthenticator extends AbstractGuardAuthenticator
         return null;
     }
 
+    /**
+     * @param mixed $credentials
+     * @param User|UserInterface $user
+     * @return bool
+     */
     public function checkCredentials($credentials, UserInterface $user)
     {
-        if (!$this->passwordEncoder->isPasswordValid($user, $credentials['password'])) {
-            throw new AuthenticationException('Invalid password');
+        $now = new DateTime();
+
+        if ($user->getTokenExpire() <= $now) {
+            throw new AuthenticationException('Token expired');
         }
 
         return true;
