@@ -35,5 +35,21 @@ services:
     ports:
     - "3306:3306"
     command: ["--default-authentication-plugin=mysql_native_password"]
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
+    container_name: ${PROJECT}-elastic
+    working_dir: /application
+    volumes:
+    - .:/application
+    ports:
+    - "9200:9200"
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.4.2
+    container_name: ${PROJECT}-kibana
+    working_dir: /application
+    volumes:
+    - .:/application
+    ports:
+    - "5601:5601"
 
 
