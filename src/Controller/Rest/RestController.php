@@ -3,14 +3,12 @@
 namespace App\Controller\Rest;
 
 use App\Entity\User;
+use App\Logger\SessionRequestProcessor;
 use App\Security\Service\UpdateApiTokenService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\UsageTrackingTokenStorage;
-use Symfony\Component\Security\Csrf\TokenStorage\TokenStorageInterface;
 
 class RestController extends AbstractController
 {
